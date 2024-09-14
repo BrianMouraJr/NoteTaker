@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const fs = require("fs/promises")
+// const path = require("path");
 
 // Ternary Operator inefficient practice in error checking for routes but keeping it here as a personal lesson.
 // Will use Try Catch practice below as it is more robust in error handling.
@@ -13,7 +14,7 @@ const fs = require("fs/promises")
 router.get("/notes", async(req, res) =>{
     try {
       const data = await fs.readFile('./db/db.json', 'utf8')  
-      console.log(data)
+      // console.log(data)
       res.status(200).json(JSON.parse(data))
     } catch (err) {
       console.log(err) //print error
@@ -21,14 +22,33 @@ router.get("/notes", async(req, res) =>{
     }
 })
 
-router.post("/notes", (req , res) =>{
-    fs.readFile('./db/db.json', 'utf8', (error, data) => {
-        let notes = data
+//Commented out due to code block not working and not returning any errors in console as to why
+// router.post("/notes", (req , res) =>{
+//     fs.readFile(path.join(__dirname, '../db/db.json'), 'utf8', (error, data) => {
+//         let notes = JSON.parse(data)
+//         console.log(notes)
+//         notes.push(req.body)
+//         fs.writeFile(path.join(__dirname, '../db/db.json'), JSON.stringify(notes), (err) => {
+//             error ? console.error(error) : res.status(200)
+//         })
+//     })
+// })
+
+router.post("/notes", async(req , res) =>{
+  try {
+    const data = await fs.readFile('./db/db.json', 'utf8')  
+    let notes = JSON.parse(data)
         notes.push(req.body)
-        fs.writeFile('../db/db.json', JSON.stringify(notes), (err) => {
-            error ? console.error(error) : res.status(200)
-        })
-    })
+        await fs.writeFile('./db/db.json', JSON.stringify(notes))
+    // console.log(data)
+    res.status(200).json("Note Added")
+  } catch (err) {
+    console.log(err) //print error
+    res.status(500).json(err) //pass it along/tell the front end that the backend crashed  
+  }
+    
+  
+  
 })
 
 module.exports = router
